@@ -1,3 +1,7 @@
 [submodule "sites/all/modules/module1"]
 	path = sites/all/modules/module1
 	url = git://github.com/bear926/module1.git
+[submodule "sites/all/modules/colorize"]
+	path = sites/all/modules/colorize
+	url = http://git.drupal.org/project/colorizer.git
+	branch = 7.x-1.x
