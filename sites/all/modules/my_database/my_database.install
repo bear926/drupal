@@ -1,0 +1,37 @@
+<?php
+
+/**
+ * @file
+ * Create shema for my_database module.
+ */
+
+ 
+/**
+ * Implementation of hook_schema().
+ */
+function my_database_schema() {
+$schema['base'] = array(
+    'fields' => array(
+			'id' => array(
+				'type'   => 'serial',
+				'not null' => TRUE,
+			),
+			'number' => array(
+				'type'   => 'int',
+				'not null' => TRUE,
+				'default' => 0,
+			),
+			'teaser' => array(
+				'type'   => 'varchar',
+				'length' => 150,
+				'not null' => TRUE,
+				'default' => '',
+			),
+			'text' => array(
+				'type'   => 'text',
+			),
+    ),
+    'primary key' => array('id'),
+  );
+  return $schema;
+} 

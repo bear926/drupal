@@ -1,0 +1,4 @@
+name = Mym
+description = Views my page and block.
+core = 7.x
+package = Fields

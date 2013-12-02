@@ -1,0 +1,4 @@
+name = myforms
+description = Create forms contacts.
+core = 7.x
+

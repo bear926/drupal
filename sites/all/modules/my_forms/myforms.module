@@ -1,0 +1,146 @@
+<?php
+
+/**
+ * @file
+ * Create forms contacts..
+ */
+ 
+
+/**
+ * Implementation of hook_menu().
+ */
+function myforms_menu() {
+	$items['contacts'] = array(  
+		'title' => 'Contacts', 
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('myforms'),
+		'access callback' => TRUE,
+	); 
+	return $items;
+}
+
+
+/**
+ * Implementation of hook_block_view().
+ */
+function myforms_permission() {
+  return array(
+    'administer myforms' => array(
+      'title' => t('Administer My_theme'),
+      'description' => t('Access to view this content is denied.'),
+    ),
+  );
+}
+
+
+/**
+ * Create  form.
+ */
+function myforms($form, &$form_state) {
+  $form = array();
+  $form['name'] = array(
+    '#type'  => 'textfield',
+    '#title' => t('Name'),
+    '#size'  => 60,
+  );
+  $form['lname'] = array(
+    '#type'  => 'textfield',
+    '#title' => t('Last Name'),
+    '#size'  => 60,
+  );
+  $form['nik'] = array(
+    '#type'      => 'textfield',
+    '#title'     => t('Nik name'),
+		'#size'      => 60, 
+		'#maxlength' => 128, 
+		'#required'  => TRUE,
+  );
+	 $form['email'] = array(
+    '#type'      => 'textfield',
+    '#title'     => t('Email'),
+		'#size'      => 60, 
+		'#maxlength' => 128, 
+		'#required'  => TRUE,
+  );
+	$form['phone'] = array(
+    '#type'      => 'textfield',
+    '#title'     => t('Telephone'),
+		'#description' => t('Extable (123)456-7890'),
+		'#size'      => 60, 
+		'#maxlength' => 128, 
+		
+  );
+	$form['you'] = array(
+		'#type'    => 'radios', 
+		'#title'   => t('You'), 
+		'#options' => array(
+			'man'    => t('Man'), 
+			'wooman' => t('Wooman'), 
+			'none'   => t('None'),
+		),
+  );
+	$form['country'] = array(
+		'#type'        => 'select', 
+		'#title'       => t('Select you country'),
+		'#options'     => array(
+			'Ukraine' => t('Ukraine'), 
+			'Russia'  => t('Russia'), 
+			'USA'     => t('USA'),
+		),
+		'#empty_option' => '-None-',
+		'#empty_value'  => 'empty value',
+	);
+	$form['msg'] = array(
+		'#type'     => 'textarea', 
+		'#title'    => t('Messege'), 
+		'#required' => TRUE
+	);
+	$form['rules'] = array(
+		'#type'       => 'fieldset', 
+		'#title'      => t('This rules'),
+		'#children'   => t(' Rules Rules Rules RulesRulesvv Rulesv '),
+		'#collapsible' => TRUE,
+		'#collapsed' => FALSE,
+	);
+	$form['ok'] = array(
+		'#type'     => 'checkbox', 
+		'#title'    => t('Do you agree with the rules of the site?'),
+		'#required' => TRUE,
+	);
+	$form['submit'] = array(
+		'#type'  => 'submit', 
+		'#value' => t('OK'),
+	);
+  return $form;
+}
+
+
+/**
+ * Validate function for myforms. 
+ */ 
+function myforms_validate($form, &$form_state) { 
+	if (!preg_match("|([a-z0-9_\.\-]{1,20})@([a-z0-9\.\-]{1,20})\.([a-z]{2,4})|is", $form_state['values']['email'])) {
+		form_set_error('email', t('Value in field "Email" is wrong.'));
+	}
+	if (!preg_match("/(\([0-9]{3}\))([0-9]{3})-([0-9]{4})/", $form_state['values']['phone'])) {
+		form_set_error('email', t('Value in field "Telephone" is wrong.'));
+	}
+} 
+
+/**
+ * Submit function for myforms.
+ */
+function myforms_submit($form, &$form_state) { 
+	$rezar = $form_state['values'];
+	$q = 0;
+	foreach ($rezar as $i => $value) {
+		$rezar[$i] = $i.': '.$rezar[$i];
+		if ($q >= 8) {
+			unset($rezar[$i]);
+		}
+		$q++;
+	}
+	$rez = implode ('<p>', $rezar);
+	//Views information messege.
+	drupal_set_message(t($rez));
+}

@@ -1,0 +1,15 @@
+name = "Google Analytics Referrer"
+description = "Lightweight system for gathering referrers detected by Google Analytics."
+package = Statistics
+core = 7.x
+
+dependencies[] = oauth_common
+
+configure = admin/config/system/google_analytics_referrer
+
+; Information added by  packaging script on 2013-11-10
+version = "7.x-1.0"
+core = "7.x"
+project = "google_analytics_referrer"
+datestamp = "1384086806"
+

@@ -1,0 +1,165 @@
+<?php
+
+/**
+ * @file
+ * Function for theming.
+ */
+ 
+
+/**
+ * Implementation of hook_menu().
+ */
+function mytheming_menu() {
+	$items['them'] = array(  
+		'title' => 'My them', 
+		'description' => 'My them', 
+		'page callback' => 'creat_page',
+		'access callback' => TRUE,
+		//'theme callback' => 'example_callback' 
+	); 
+	return $items;
+}
+
+/**
+ * Rename theme.
+ */
+///function example_callback() { 
+ // return 'mytheme'; 
+//} 
+
+/**
+ * Update node.
+*/
+ 
+
+/**
+ * Create item for list.
+ */
+function creat_page() {
+	
+	//Create img.
+	$img = theme('image_style', array('path' => 'images/bear.jpg'));
+	
+	//Create form.
+	$variables = array( 
+		'items' =>  array( 
+			array('data' => t('A')),   
+			array('data' => t('B')),   
+			array('data' => t('C'))   
+		),
+		'title' 		 => 'title',
+		'type'  		 => 'ul',
+		'attributes' => array( 
+			array('a' => t('A')),   
+			array('b' => t('B')),   
+			array('c' => t('C'))   
+		) 
+											);
+	$list = theme('item_list',$variables);
+	
+	//Create table
+	$header = array(
+    array('data' => t('Heder My table'), 'colspan' => 3),  
+  );
+  $rows[] = array(
+    array('data' => t('Row 1 - Cell 1')), 
+    array('data' => t('Row 1 - Cell 2')), 
+    array('data' => t('Row 1 - Cell 3'))  
+	);
+  $rows[] = array( 
+    array('data' => t('Row 2 - Cell 1')), 
+    array('data' => t('Row 2 - Cell 2')),
+    array('data' => t('Row 2 - Cell 3'))
+  ); 
+	$table = theme('table', array('header' => $header, 'rows'=> $rows));
+	
+	//Create one fields.
+	drupal_add_library('system', 'drupal.collapse');
+	$one_element = array(
+		'#title'       => t('One fild'),
+		'#children'    => t('This is  text one filds').$list,
+		'#collapsible' => true,  
+		'#collapsed'   => true,
+		'#attributes'  => array( 
+			'class' => array(
+				'collapsible', 
+				'collapsed'
+			)
+		)
+	);
+	$fieldset_one = theme('fieldset', array('element' => $one_element)); 
+
+	//Create two fields.
+	$two_element = array(
+		'#title'       => t('Two fild'),
+	  '#children'    => t('This is  text two filds').$table,
+	  '#collapsible' => TRUE,  
+	  '#collapsed'   => TRUE,
+	  '#attributes'  => array('class' => array('collapsible', 'collapsed'))
+	);
+	$fieldset_two = theme('fieldset', array('element' => $two_element)); 
+	
+	//Create items from addh.
+	$add = theme('addh', array('data' => 'This text I views bu hook_theme', 'h' => 2, 'tag' => 'strong'));
+	
+	//Create tpl.php
+	$addshow = theme('show_template', array('data' => 'This text create on a  page show_template', 'datan' => 'BYYYY be'));
+	
+	return $add.$img.$fieldset_one.$fieldset_two.$addshow;
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function mytheming_theme() {
+  return array(
+		'addh' => array(
+			'variables' => array(
+				'data' => NULL, 
+				'h'    => NULL,
+				'tag'  => NULL,
+			),
+		),
+		'show_template' => array(
+			'variables' => array(
+				'data'  => NULL,
+				'datan' => NULL,
+			),
+			'template' => 'mymodule-template',
+		),
+	);
+}
+ 
+/**
+ * Implementation of hook_theme().
+ */
+ /*
+function mytheming_theme() {
+  return array(
+		
+	);
+}
+*/
+
+function theme_addh($variables) {
+  $data = $variables['data'];
+	//Type number tag <h>,  example <h1>, <h2>.
+  $h = $variables['h'];
+	//Additional tag,  example <strong>, <div>, <span>.
+	$tag = $variables['tag'];
+  return "<h$h> <$tag> $data </$tag> </h$h>";
+}
+
+
+
+/**
+ * Implementation of hook_block_view().
+ */
+function mytheming_permission() {
+  return array(
+    'administer theme' => array(
+      'title' => t('Administer My_theme'),
+      'description' => t('Access to view this content is denied.')
+    ),
+  );
+}

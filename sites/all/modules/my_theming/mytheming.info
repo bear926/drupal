@@ -1,0 +1,4 @@
+name = mytheming
+description = Function for theming.
+core = 7.x
+

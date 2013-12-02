@@ -1,0 +1,265 @@
+<?php
+
+/**
+ * @file
+ * Create my_database.
+ */
+ 
+
+ /**
+ * Implementation of hook_menu().
+ */
+function my_database_menu() {
+  $items['form/%/%'] = array(  
+    'title callback'   => 'my_database_update_page_title',
+    'title arguments'  => array(1),
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('my_database_myformz', 1),
+    'access arguments' => array('administer site configuration'),
+  );
+  //Page with table database.
+  $items['database'] = array(
+    'title'            => 'Table with data',
+    'page callback'    => 'database_page',
+    'access arguments' => array('administer site configuration'),
+  );
+  //Page delete data with database.
+  $items['database/%/delete'] = array(
+    'title callback'   => 'my_database_delete_page_title',
+    'title arguments'  => array(1),
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('my_database_delete_form', 1),
+    'access arguments' => array('administer site configuration'),
+  );
+  return $items;
+}
+ 
+
+/**
+ * Function create dinamic title for update page.
+ */
+function my_database_update_page_title($id) {
+  if (isset($id)) {
+    $placeholders = array(':id' => $id);
+    $number = db_query("SELECT `number` FROM {base} WHERE `id` = :id", $placeholders)->fetchField();
+    return t('Update item with number "@num".', array('@num' => $number));
+  }
+  else {
+    return t('Form');
+  }
+}
+
+ 
+ 
+/**
+ * Create  form.
+ */
+function my_database_myformz($form, &$form_state) {
+  if (arg(1) && (arg(2) == 'update')) {
+    $id = arg(1);
+  }
+  else{
+    $id = NULL;
+  }
+  $result = db_select('base', 'b')
+    ->fields('b')
+    ->condition('id', $id)
+    ->execute()
+    ->fetchAssoc();
+  $form = array();
+  $form['number'] = array(
+    '#type'      => 'textfield',
+    '#title'     => t('Number'),
+    '#default_value' => $id ? $result['number']: NULL,
+    '#maxlength' => 10,
+    '#required'  => TRUE,
+  );
+  $form['teaser'] = array(
+    '#type'      => 'textfield',
+    '#title'     => t('Teaser'),
+    '#default_value' => $id ? $result['teaser'] : NULL,
+    '#maxlength' => 150,
+    '#required'  => TRUE,
+  );
+  $form['text'] = array(
+    '#type'      => 'textarea',
+    '#title'     => t('Text'),
+    '#default_value' =>  $id ? $result['text'] : NULL,
+    '#required'  => TRUE,
+  );
+  $form['submit'] = array(
+    '#type'  => 'submit', 
+    '#value' => t('OK'),
+  );
+  return $form;
+}
+
+
+
+/**
+ * Validate for my_database_form.
+ */
+function my_database_myformz_validate($form, &$form_state) {
+  if (drupal_strlen($form_state['values']['number']) > 10) {
+    form_set_error('number', t('Field "@fieldname" must be less than @c chars.',
+      array('@fieldname' => t('Number'), '@c' => 10)));
+  }
+  elseif (!ctype_digit($form_state['values']['number'])) {
+    form_set_error('number', t('Field "number" must contains an integer.'));
+  }
+  if (drupal_strlen($form_state['values']['teaser']) > 150) {
+    form_set_error('teaser', t('Field "@fieldname" must be less than @c chars.',
+      array('@fieldname' => t('Teaser'), '@c' => 150)));
+  }
+}
+
+
+/**
+ * Submit for my_database_form.
+ */
+function my_database_myformz_submit($form, &$form_state) {
+  $id = $form_state['build_info']['args'][0];
+  $query = db_merge('base')
+    ->key(array('id' => $id))
+    ->fields(array(
+      'number' => $form_state['values']['number'],
+      'teaser' => $form_state['values']['teaser'],
+      'text'   => $form_state['values']['text'],
+        
+    ))
+    ->updateFields(array(
+      'number' => $form_state['values']['number'],
+      'teaser' => $form_state['values']['teaser'],
+      'text'   => $form_state['values']['text'],
+    )) 
+    ->execute();
+  $query ? drupal_set_message(t('Data has been successfully update.')): drupal_set_message(t("Data hasn't been update."), 'error');
+
+/*
+  if (arg(1) && (arg(2) == 'update')) {
+    $id = $form_state['build_info']['args'][0];
+    $query = db_update('base') 
+      ->fields(array(
+        'number' => $form_state['values']['number'],
+        'teaser' => $form_state['values']['teaser'],
+        'text'   => $form_state['values']['text'],
+      ))
+      ->condition('id', $id)
+      ->execute();
+    if ($query > 0) {
+      drupal_set_message(t('Data has been successfully update.'));
+    }
+    else {
+      drupal_set_message(t("Data hasn't been update."), 'error');
+    }
+  }
+  else {
+    $query = db_insert('base')
+      ->fields(array(
+        'number' => $form_state['values']['number'],
+        'teaser' => $form_state['values']['teaser'],
+        'text'   => $form_state['values']['text'],
+      ))
+      ->execute();
+    if ($query > 0) {
+      drupal_set_message(t('Data has been successfully insert.'));
+    }
+    else {
+      drupal_set_message(t("Data hasn't been insert."), 'error');
+    }
+  }*/
+  $form_state['redirect'] = 'database';
+}
+
+
+/**
+ * Create table for page database.
+ */
+function database_page() {
+  $header = array(t('ID'), t('Number'), t('Teaser'), t('Text'), t('Update'), t('Delete'));
+  $rows = array();
+  $query = db_select('base', 'b');
+  $query->join('users', 'u', 'u.uid = b.id');
+  $query = $query->fields('b', array('id', 'number', 'teaser', 'text'))
+    ->fields('u', array('uid', 'name'))
+    ->execute()
+    ->fetchAllAssoc('number');
+  $value = $query;
+  dpm($value);
+  
+  foreach ($value as $v){
+    $rows[] = array(
+      $v->id,
+      $v->number,
+      $v->teaser,
+      $v->text,
+      l(t('Update'), "form/{$v->id}/update"),
+      l(t('Delete'), "database/{$v->id}/delete"),
+    );
+  }
+  /*while ($value = $query->fetchAssoc()) {
+    $rows[] = array(
+      $value['id'],
+      $value['number'],
+      $value['teaser'],
+      $value['text'],
+    l(t('Update'), "form/{$value['id']}/update"),
+      l(t('Delete'), "database/{$value['id']}/delete"),
+    );
+  }*/
+  return theme('table', array('header' => $header, 'rows' => $rows));
+}
+
+
+/**
+ * Function create dinamic title for verification delete.
+ */
+function my_database_delete_page_title($id) {
+  $placeholders = array(':id' => $id);
+  $number = db_query("SELECT `number` FROM {base} WHERE `id` = :id", $placeholders)->fetchField();
+  return t('Are you sure you want to delete item with number "@num"?', array('@num' => $number));
+}
+
+
+/**
+ * Function for verification delete filds with database.
+ */
+function my_database_delete_form($form, $form_state) {
+  $form = array();
+  $form['submit'] = array(
+    '#type'  => 'submit',
+    '#value' => t('OK'),
+  );
+  $form['cancel'] = array(
+    '#markup' => l(t('Cancel'), 'database'),
+  );
+  return $form;
+}
+
+
+/**
+ * Function for submit delete filds with database.
+ */
+function my_database_delete_form_submit($form, &$form_state) {
+  $id = $form_state['build_info']['args'][0];
+  $result = db_delete('base')
+    ->condition('id', $id)
+    ->execute();
+  $placeholders = array('@id' => $id);
+  if ($result) {
+    drupal_set_message(t('Record @id successfully removed.', $placeholders));
+  }
+  else {
+    drupal_set_message(t('Record @id is undefined.', $placeholders), 'warning');
+  }
+  $form_state['redirect'] = 'database';
+}
+
+
+/**
+ * Implementation of hook_mym_data().
+ */
+function my_database_mym_data() {
+  $t = 'testing';
+  return $t;
+}

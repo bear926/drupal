@@ -1,0 +1,4 @@
+name = my_database
+description = Create my_database.
+core = 7.x
+
